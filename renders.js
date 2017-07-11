@@ -6,6 +6,7 @@ import {
   Image,
   Text,
   View,
+  ActivityIndicator,
 } from 'react-native'
 
 import {
@@ -129,10 +130,57 @@ export default Object.freeze({
   ),
   image: (node: ImageNode, output: OutputFunction, state: RenderState, styles: RenderStyles) => {
     const {imageWrapper: wrapperStyle, image: imageStyle} = styles
+
+    class MDImage extends React.Component {
+      state = {
+        loading: true,
+        width: wrapperStyle[1].width,
+        imageStyle,
+        wrapperStyle,
+      }
+
+      componentDidMount() {
+        if (!isNaN(this.state.width)) {
+          Image.getSize(node.target, (w, h) => {
+            const newImageStyle = {};
+            newImageStyle.width = this.state.width;
+            newImageStyle.height = h * (this.state.width / w);
+
+            const newWrapperStyle = { marginLeft: -10 };
+            newWrapperStyle.width = this.state.width;
+            newWrapperStyle.height = h * (this.state.width / w);
+
+            this.setState({
+              loading: false,
+              imageStyle: newImageStyle,
+              wrapperStyle: newWrapperStyle,
+            });
+          });
+        }
+      }
+
+      render() {
+        const { wrapperStyle, imageStyle } = this.state;
+
+        if (this.state.loading) {
+          return (
+            <View key={state.key} style={[wrapperStyle, { height: 150, alignItems: 'center', justifyContent: 'center' }]}>
+              <ActivityIndicator animated />
+            </View>
+          );
+        }
+        return (
+          <View key={state.key} style={wrapperStyle}>
+            <Image
+              source={{ uri: node.target }}
+              style={imageStyle}
+            />
+          </View>
+        );
+      }
+    }
     return (
-      <View key={state.key} style={node.width && node.height ? [wrapperStyle, paddedSize(node, wrapperStyle)] : wrapperStyle}>
-        <Image source={{uri: node.target}} style={imageStyle}/>
-      </View>
+        <MDImage />
     )
   },
   inlineCode: renderTextContent('inlineCode'),
