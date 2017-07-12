@@ -101,6 +101,7 @@ export default Object.freeze({
   paragraph: {
     marginTop: 10,
     marginBottom: 10,
+    textAlign: 'justify',
   },
   strong: {
     fontWeight: '700',
