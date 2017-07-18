@@ -7,6 +7,7 @@ import {
   Text,
   View,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native'
 
 import {
@@ -134,7 +135,7 @@ export default Object.freeze({
     class MDImage extends React.Component {
       state = {
         loading: true,
-        width: wrapperStyle[1].width,
+        width: Array.isArray(wrapperStyle) ? wrapperStyle[1].width : undefined,
         imageStyle,
         wrapperStyle,
       }
@@ -156,6 +157,22 @@ export default Object.freeze({
               wrapperStyle: newWrapperStyle,
             });
           });
+        } else {
+          Image.getSize(node.target, (w, h) => {
+            const newImageStyle = {};
+            newImageStyle.width = w;
+            newImageStyle.height = h;
+
+            const newWrapperStyle = { marginLeft: -10 };
+            newWrapperStyle.width = w;
+            newWrapperStyle.height = h;
+
+            this.setState({
+              loading: false,
+              imageStyle: newImageStyle,
+              wrapperStyle: newWrapperStyle,
+            });
+          });
         }
       }
 
@@ -169,8 +186,9 @@ export default Object.freeze({
             </View>
           );
         }
+        const { width } = Dimensions.get('window');
         return (
-          <View key={state.key} style={wrapperStyle}>
+          <View key={state.key} style={[wrapperStyle, { width, justifyContent: 'center', alignItems: 'center' }]}>
             <Image
               source={{ uri: node.target }}
               style={imageStyle}
@@ -179,9 +197,17 @@ export default Object.freeze({
         );
       }
     }
-    return (
-        <MDImage />
-    )
+    // return (
+    //     <MDImage />
+    // )
+    // if (Array.isArray(imageStyle)) {
+      return <MDImage />;
+  //   }
+  //  return (
+  //    <View key={state.key} style={node.width && node.height ? [wrapperStyle, paddedSize(node, wrapperStyle)] : wrapperStyle}>
+  //      <Image source={{uri: node.target}} style={imageStyle}/>
+  //    </View>
+  //  )
   },
   inlineCode: renderTextContent('inlineCode'),
   link: (node: LinkNode, output: OutputFunction, state: RenderState, styles: RenderStyles) => {
